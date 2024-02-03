@@ -70,3 +70,7 @@ group :test do
   gem "selenium-webdriver"
 
 end
+gem 'activeadmin'
+gem "sassc-rails"
+gem 'jwt'
+gem 'bcrypt'
