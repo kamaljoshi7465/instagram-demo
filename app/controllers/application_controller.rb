@@ -2,20 +2,35 @@ class ApplicationController < ActionController::Base
   before_action :verify_authenticity_token
   before_action :current_user
 
-  private
+  ERROR_CLASSES = [
+    JWT::DecodeError,
+    JWT::ExpiredSignature,
+  ].freeze
 
+  private
   def current_user
+    @current_user ||= User.find(@token[:user_id]) if @token.present?
+  end
+
+  def verify_authenticity_token
+    return if controller_path.start_with?('admin/')  #skip token for admin
+
     token = request.headers[:token] || params[:token]
-    if token.present?
-      begin
-        decoded_token ||= JsonWebToken.decode(token)
-        if @current_user ||= User.find(decoded_token[:user_id])
-        else
-          render json: { message: "Invalid token" }, status: :unprocessable_entity
-        end
-      rescue JWT::VerificationError, JWT::DecodeError
-        render json: { message: "Invalid token" }, status: :unprocessable_entity
-      end
+    begin
+      @token = JsonWebToken.decode(token)
+    rescue *ERROR_CLASSES => exception
+      handle_exception exception
+    end
+  end
+
+  def handle_exception(exception)
+    case exception
+    when JWT::ExpiredSignature
+      return render json: { errors: [token: 'Token has Expired'] },
+        status: :unauthorized
+    when JWT::DecodeError
+      return render json: { errors: [token: 'Invalid token'] },
+        status: :bad_request
     end
   end
 end

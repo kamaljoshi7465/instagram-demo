@@ -74,3 +74,4 @@ gem 'activeadmin'
 gem "sassc-rails"
 gem 'jwt'
 gem 'bcrypt'
+gem 'active_model_serializers'
