@@ -1,23 +1,20 @@
 ActiveAdmin.register User do
-  permit_params :name, :email, :username, :password
+  actions :all, except: [:new]
+  permit_params :email, :password
   
   index do
     selectable_column
     id_column
-    column :name
     column :email
     column :username
     actions
   end
 
-  filter :name
   filter :email
-  filter :username
   filter :created_at
 
   form do |f|
     f.inputs do
-      f.input :name
       f.input :email
       f.input :password
     end
